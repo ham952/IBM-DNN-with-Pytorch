@@ -11,47 +11,72 @@ f = -3 * X
 Y = f + 0.1 *torch.rand(X.size())
 lr = 0.1
 
-epochs = 5
+# learning_rates = [0.0001, 0.001, 0.01 , 0.1, 1]
+# validation_error = torch.zeros(len(learning_rates))
+# test_error = torch.zeros(len(learning_rates))
+# Models = []
+
+epochs = 10
 
 class Data(Dataset):
     
-    def __init__(self, length = 100, transform = None):
+    # Constructor
+    def __init__(self, train = True, length = 100, transform = None):
         
         self.X = torch.arange(-3,3,0.1).view(-1,1)
         f = -3 * self.X
         self.Y = f + 0.1 *torch.rand(X.size())
         self.transform = transform
         self.len = len(self.X)
+
+        # some artifcial data for training 
+        if train:
+            self.Y[0] = 0
+            self.Y[50:55] = 20
     
+    # Getter
     def __getitem__(self, index):
         
         sample = self.X[index] , self.Y[index]
         return sample
-        
+
+    # Get Length    
     def __len__(self):
 
         return self.len
 
 class LR(nn.Module):
     
+    # Constructor
     def __init__(self, input_size, output_size):
         super(LR, self).__init__()
         
         self.linear = nn.Linear(input_size, output_size)
     
+    # Prediction
     def forward(self, x):
         
         out = self.linear(x)
         return out
 
-criterion = nn.MSELoss()
-dataset = Data()
-trainloader = DataLoader(dataset=dataset, batch_size=1)
+# Create Dataloader object
+train_data = Data()
+val_data = Data(train=False)
 
+trainloader = DataLoader(dataset=train_data, batch_size=1)
+val_loader = DataLoader(dataset=val_data, batch_size= 1)
+
+# Build in cost function
+criterion = nn.MSELoss()
+
+# Create model object
 model = LR(1,1)
+# Create optimizer : get parameters from model
 optimizer = optim.SGD(model.parameters(), lr = 0.01)
 
 # optimizer.state_dict()
+
+# Train Model
 Loss = []
 
 def train_model(epochs):
