@@ -101,7 +101,7 @@ def train_model(epochs):
 
         for x,y in trainloader:
 
-            # make the prediction as we learned in the last lab
+            # make the prediction 
             yhat = model(x)
             
             # calculate the iteration
