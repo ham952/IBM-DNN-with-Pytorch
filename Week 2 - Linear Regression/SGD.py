@@ -64,28 +64,40 @@ train_data = Data()
 val_data = Data(train=False)
 
 trainloader = DataLoader(dataset=train_data, batch_size=1)
-val_loader = DataLoader(dataset=val_data, batch_size= 1)
+# val_loader = DataLoader(dataset=val_data, batch_size= 1)
 
 # Build in cost function
 criterion = nn.MSELoss()
 
 # Create model object
+# model = LR(train_data.x.shape[1],1) # for multiple input dataset
 model = LR(1,1)
 # Create optimizer : get parameters from model
-optimizer = optim.SGD(model.parameters(), lr = 0.01)
+optimizer = optim.SGD(model.parameters(), lr = 0.1)
 
 # optimizer.state_dict()
 
 # Train Model
-Loss = []
+train_Loss = []
+val_Loss = []
 
 def train_model(epochs):
     
     for epoch in range (epochs):
         
+        # training loss
+        X = train_data.X
+        Y = train_data.Y
         Yhat = model(X)
         loss = criterion(Yhat, Y)
-        Loss.append(loss.tolist())
+        train_Loss.append(loss.tolist())
+
+        # Validation Loss
+        X_val = val_data.X
+        Y_val = val_data.Y
+        Yhat = model(X_val)
+        loss = criterion(Yhat, Y_val)
+        val_Loss.append(loss.tolist())
 
         for x,y in trainloader:
 
@@ -108,9 +120,9 @@ def train_model(epochs):
 train_model(epochs)
 print('Training Batch Gradient Descent .... ')
 print('Cost of each epoch == Loss of Each epoch')
-print('\nLoss /Cost elements  == epochs :',Loss)
 print('Number of elements in epoch / batch :',len(X))
-
+print('Training Loss :', train_Loss)
+print('Validation Loss :', val_Loss)
 
 ######################################################
 # Mini Batch Gradient Descent : Another Way
@@ -137,6 +149,8 @@ def criterion(y, yhat):
 def train_model_Mini(epochs):
 
     for epoch in range(epochs):
+        X = dataset.X
+        Y = dataset.Y
         Yhat = forward(X)
         loss = criterion(Yhat,Y)
         #LOSS_MINI.append(criterion(forward(X),Y).tolist())

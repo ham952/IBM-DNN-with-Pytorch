@@ -181,16 +181,20 @@ trainloader = DataLoader(dataset = dataset, batch_size = 5)
 w = torch.tensor(-15.0, requires_grad = True)
 b = torch.tensor(-10.0, requires_grad = True)
 LOSS_MINI = []
+LOSS_MINI_batch = []
 lr = 0.1
 
 def train_model_Mini(epochs):
 
     for epoch in range(epochs):
+        X = dataset.X
+        Y = dataset.Y
         Yhat = forward(X)
         loss = criterion(Yhat,Y)
         #LOSS_MINI.append(criterion(forward(X),Y).tolist())
         LOSS_MINI.append(loss.tolist())
 
+        total = 0
         for x, y in trainloader:
             yhat = forward(x)
             loss = criterion(yhat, y)
@@ -199,7 +203,12 @@ def train_model_Mini(epochs):
             b.data = b.data - lr * b.grad.data
             w.grad.data.zero_()
             b.grad.data.zero_()
+
+            total+=loss.item()
+        
+        LOSS_MINI_batch.append(total)
             
 train_model_Mini(5)
 print ('\nTraining Mini Match different wway ....')
 print("\nCost of Each Epoch :", LOSS_MINI)
+print("\nCost of Each Epoch wrt batch iteration :", LOSS_MINI_batch)
