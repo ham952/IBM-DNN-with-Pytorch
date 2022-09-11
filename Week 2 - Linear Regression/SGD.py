@@ -78,8 +78,8 @@ optimizer = optim.SGD(model.parameters(), lr = 0.1)
 # optimizer.state_dict()
 
 # Train Model
-train_Loss = []
-val_Loss = []
+train_Cost = []
+val_Cost = []
 
 def train_model(epochs):
     
@@ -90,14 +90,14 @@ def train_model(epochs):
         Y = train_data.Y
         Yhat = model(X)
         loss = criterion(Yhat, Y)
-        train_Loss.append(loss.tolist())
+        train_Cost.append(loss.tolist())
 
         # Validation Loss
         X_val = val_data.X
         Y_val = val_data.Y
         Yhat = model(X_val)
         loss = criterion(Yhat, Y_val)
-        val_Loss.append(loss.tolist())
+        val_Cost.append(loss.tolist())
 
         for x,y in trainloader:
 
@@ -121,8 +121,8 @@ train_model(epochs)
 print('Training Batch Gradient Descent .... ')
 print('Cost of each epoch == Loss of Each epoch')
 print('Number of elements in epoch / batch :',len(X))
-print('Training Loss :', train_Loss)
-print('Validation Loss :', val_Loss)
+print('Training Loss :', train_Cost)
+print('Validation Loss :', val_Cost)
 
 ######################################################
 # Mini Batch Gradient Descent : Another Way
@@ -133,7 +133,7 @@ trainloader = DataLoader(dataset = dataset, batch_size = 5)
 
 w = torch.tensor(-15.0, requires_grad = True)
 b = torch.tensor(-10.0, requires_grad = True)
-LOSS_MINI = []
+COST_MINI = []
 lr = 0.1
 
 def forward(x):
@@ -154,7 +154,7 @@ def train_model_Mini(epochs):
         Yhat = forward(X)
         loss = criterion(Yhat,Y)
         #LOSS_MINI.append(criterion(forward(X),Y).tolist())
-        LOSS_MINI.append(loss.tolist())
+        COST_MINI.append(loss.tolist())
 
         for x, y in trainloader:
             yhat = forward(x)
@@ -167,4 +167,4 @@ def train_model_Mini(epochs):
             
 train_model_Mini(5)
 print ('\nTraining Mini Match different wway ....')
-print("\nCost of Each Epoch :", LOSS_MINI)
+print("\nCost of Each Epoch :", COST_MINI)
