@@ -1,74 +1,63 @@
 import torch
+import torch.nn as nn
 from torch.nn import Linear
 from torch import nn, optim
 from torch.utils.data import Dataset, DataLoader
 
 torch.manual_seed(1)
-
-# in_features = # of columns of weights matrix = m
-# out_featues = # of rows of weights matrix = n
-# in_features == # of coumns of Input X
+output_size = 1
 
 ######################################################
-# Multiple input Linear Regression : 
+# Logistic Regression
 ######################################################
 
-model = Linear(in_features=2, out_features=2)
-print(list(model.parameters()))
-weights = model.state_dict()['weight'] 
-print('Dimensions of w :',weights.shape)
+z = torch.arange(-100,100,0.1).view(-1,1)
+sig = nn.Sigmoid()
 
-# X = torch.tensor([[1.0,3.0,4.0],[4.0,5.0,7.0]])
-X = torch.tensor([[1.0,3.0],[4.0,5.0], [10.0,8.8]])
+yhat = sig(z)
+yhat = torch.sigmoid(z)
 
-# X = r x c
-# w = n x m
-# y = X.wT + b = r x n
+x = torch.arange(-100,100,0.1).view(-1,1)
 
-print('Dimensions of X :', X.shape)
-yhat = model(X)
-print('Dimensions of Yhat :',yhat.shape)
+# Use sequential function to create model
+model = nn.Sequential(nn.Linear(1,1), nn.Sigmoid())
+yhat = model(x)
+
 print(yhat)
 
-
 ######################################################
-# Multiple input/output Linear Regression : Custom Module
+# Logistic Regression : Custom Module
 ######################################################
 
-output_size = 2
+class logistic_regression(nn.Module):
 
-class LR(nn.Module):
-    
     # Constructor
     def __init__(self, input_size, output_size):
-        super(LR, self).__init__()
-        
+        super(logistic_regression, self).__init__()
+
         self.linear = nn.Linear(input_size, output_size)
     
-    # Prediction
-    def forward(self, x):
+    # Predictor
+    def forward(self,x):
         
-        out = self.linear(x)
+        out = torch.sigmoid(self.linear(x))
         return out
 
-my_model = LR(X.shape[1],output_size)
-print(list(my_model.parameters()))
-output = my_model(X)
-print(output)
+x = torch.tensor([[1.0],[1.0]])
+model = logistic_regression(x.shape[1],1)
+yhat = model(x)
+print(yhat)
 
-class Data2D(Dataset):
+class Data(Dataset):
 
     # Constructor
     def __init__(self):
 
-        self.x = torch.zeros(20,3)
+        self.x = torch.zeros(20,1)
         self.x[:,0] = torch.arange(-1,1,0.1)
-        self.x[:,1] = torch.arange(-1,1,0.1)
         
-        self.w = torch.tensor([[1.0],[1.0],[1.0]])
-        self.b = 1
-        self.f = torch.mm(self.x, self.w) +self.b
-        self.y = self.f + 0.1 * torch.randn((self.x.shape[0],output_size))
+        self.y = torch.zeros(self.x.shape[0], 1)
+        self.y[self.x[:, 0] > 0.2] = 1
 
         self.len = self.x.shape[0]
     
@@ -81,14 +70,19 @@ class Data2D(Dataset):
         return self.len
 
 # Create Dataloader object
-dataset = Data2D()
+dataset = Data()
 train_loader = DataLoader(dataset=dataset, batch_size=1)
 
 # Build in cost function
-criterion = nn.MSELoss()
+def criterion_custom(y, yhat):
+    out = -1 * torch.mean((y*torch.log(yhat)) + ( (1-y) * torch.log(1-yhat) ) )
+    return out
+
+criterion = nn.BCELoss()
+criterion_rms = nn.MSELoss()
 
 # Create model object
-my_model = LR(dataset.x.shape[1],output_size)
+my_model = logistic_regression(dataset.x.shape[1],output_size)
 # Create optimizer : get parameters from model
 optimizer = optim.SGD(my_model.parameters(), lr = 0.1)
 
@@ -103,6 +97,7 @@ def train_model():
             # make the prediction
             yhat = my_model(x)
             # calculate the iteration loss
+            # loss = criterion_rms(yhat, y)
             loss = criterion(yhat, y)
 
             # zero the gradients before running the backward pass
@@ -114,18 +109,22 @@ def train_model():
             # updata parameters
             optimizer.step()
         
-        # training loss / Cost at Nth Epoch
+        # training loss / Cost at nth epoch
         Yhat = my_model(dataset.x)
         cost = criterion(Yhat, dataset.y)
         Cost.append(cost.item())    
     
-    return Yhat
+    labels = Yhat > 0.5
+    return labels
+
+
 
 
 print('Training ..')
-yhat = train_model()
-print(Cost)
+labels = train_model()
+print('Cost of Each Epoch',Cost)
+print("The accuracy: ", torch.mean((labels == dataset.y.type(torch.ByteTensor)).type(torch.float)))
 
 print('Ground Truth Vs Predicted Value :')
 for i in range(len(dataset.y)):
-    print(dataset.y[i], '\t', yhat[i])
+    print(dataset.y[i], '\t', labels[i].float())
