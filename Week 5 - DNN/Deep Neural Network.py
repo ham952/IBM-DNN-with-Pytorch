@@ -1,3 +1,4 @@
+from statistics import mode
 import torch
 import torch.nn as nn
 from torch.nn import Linear
@@ -312,8 +313,9 @@ training_results_Uniform = train(model_Uniform, criterion, train_loader, val_loa
 model_He = Net_He(Layers)
 optimizer = torch.optim.SGD(model_He.parameters(), lr=learning_rate)
 training_results_He = train(model_He, criterion, train_loader, val_loader, optimizer, epochs=epochs)
-# Plot the loss
 
+# Plot the loss
+plt.figure()
 plt.plot(training_results_Xavier['training_loss'], label='Xavier')
 plt.plot(training_results['training_loss'], label='Default')
 plt.plot(training_results_Uniform['training_loss'], label='Uniform')
@@ -323,10 +325,10 @@ plt.xlabel('iteration ')
 plt.title('training loss iterations')
 plt.legend()
 plt.savefig('Training Loss.png')
-plt.clf()
+plt.draw()
 
 # Plot the accuracy
-
+plt.figure()
 plt.plot(training_results_Xavier['validation_accuracy'], label='Xavier')
 plt.plot(training_results['validation_accuracy'], label='Default')
 plt.plot(training_results_Uniform['validation_accuracy'], label='Uniform')
@@ -335,7 +337,6 @@ plt.ylabel('validation accuracy')
 plt.xlabel('epochs')   
 plt.legend()
 plt.savefig('Validation Accuracy.png')
+plt.draw()
 
 plt.show()
-
-
